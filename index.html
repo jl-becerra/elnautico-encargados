@@ -369,9 +369,17 @@ async function openDay(date){
       }
     }
   });
-  workers=workers.filter(w=>!w._deleted);
-  const srtDay=workers.filter(p=>!isEvening(p.hor)).sort((a,b)=>startHourNorm(a.hor)-startHourNorm(b.hor));
-  const srtEve=workers.filter(p=>isEvening(p.hor)).sort((a,b)=>startHourNorm(a.hor)-startHourNorm(b.hor));
+  // Keep deleted workers visible (shown in grey with red C)
+  const srtDay=workers.filter(p=>!isEvening(p.hor)).sort((a,b)=>{
+    if(a._deleted&&!b._deleted)return 1;
+    if(!a._deleted&&b._deleted)return -1;
+    return startHourNorm(a.hor)-startHourNorm(b.hor);
+  });
+  const srtEve=workers.filter(p=>isEvening(p.hor)).sort((a,b)=>{
+    if(a._deleted&&!b._deleted)return 1;
+    if(!a._deleted&&b._deleted)return -1;
+    return startHourNorm(a.hor)-startHourNorm(b.hor);
+  });
   const label=DAYS_L[date.getDay()]+' '+date.getDate()+' de '+MONTHS_G[date.getMonth()];
 
   // Build thead
@@ -419,8 +427,9 @@ async function openDay(date){
     return HALF_SLOTS.map((slot,si)=>{
       if(si%2!==0)return'';
       const next=HALF_SLOTS[si+1];
-      const n1=list.filter(p=>activeSlots(p.hor).has(slot)).length;
-      const n2=next!==undefined?list.filter(p=>activeSlots(p.hor).has(next)).length:n1;
+      const active=list.filter(p=>!p._deleted);
+      const n1=active.filter(p=>(p._slots||activeSlots(p.hor)).has(slot)).length;
+      const n2=next!==undefined?active.filter(p=>(p._slots||activeSlots(p.hor)).has(next)).length:n1;
       const n=Math.min(n1,n2);
       return'<td colspan="2" style="border-right:0.5px solid var(--border2);border-top:0.5px solid var(--border2);font-size:10px;font-weight:700;color:var(--text);text-align:center;height:20px;line-height:20px">'+(n||'')+'</td>';
     }).join('');
