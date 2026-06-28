@@ -121,9 +121,9 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-
 
 // ── SUPABASE ────────────────────────────────────────────────────
 // ── SUPABASE CONFIG ─────────────────────────────────────────────
-// Sustituye sb_publishable_Kzp4EdkK5b6J9qMI5YZwaQ_L1Vsafff por tu anon/public key de Supabase
+// Sustituye TU_SUPABASE_KEY por tu anon/public key de Supabase
 const SUPA_URL = 'https://ygljrtonvowmgidfdect.supabase.co';
-const SUPA_KEY = 'sb_publishable_Kzp4EdkK5b6J9qMI5YZwaQ_L1Vsafff';
+const SUPA_KEY = 'TU_SUPABASE_KEY';
 
 const supa = {
   headers: {
@@ -342,18 +342,28 @@ async function openDay(date){
   const mods = await loadDayMods(fmtD(date));
   let workers=STAFF.filter(p=>isAvail(p,date)).map(p=>({...p}));
 
+  // Store original slots before applying mods
+  const origSlotsMap={};
+  workers.forEach(w=>{ origSlotsMap[w.db_id]=activeSlots(w.hor); });
+
   // Apply DB modifications
   mods.forEach(mod=>{
     const w=workers.find(p=>p.db_id===mod.personal_id);
     if(mod.estado==='eliminado'){ if(w) w._deleted=true; }
     else if(mod.estado==='añadido'){
       if(!w){ const p=STAFF.find(x=>x.db_id===mod.personal_id);
-        if(p) workers.push({...p,hor:mod.entrada+'-'+mod.salida}); }
+        if(p){
+          const savedSlots=new Set((mod.slots||[]).map(Number));
+          const hor=slotsToHorario(savedSlots);
+          workers.push({...p,hor:hor.entrada+'-'+hor.salida,_slots:savedSlots,_added:true});
+        }
+      }
     } else if(w){
-      // Reconstruct hor from saved slots for half-hour precision
       if(mod.slots&&mod.slots.length){
-        const s=slotsToHorario(new Set(mod.slots.map(Number)));
-        w.hor=s.entrada+'-'+s.salida;
+        const savedSlots=new Set(mod.slots.map(Number));
+        const hor=slotsToHorario(savedSlots);
+        w.hor=hor.entrada+'-'+hor.salida;
+        w._slots=savedSlots;
       } else {
         w.hor=mod.entrada+'-'+mod.salida;
       }
