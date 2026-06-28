@@ -349,7 +349,8 @@ async function openDay(date){
   // Apply DB modifications
   mods.forEach(mod=>{
     const w=workers.find(p=>p.db_id===mod.personal_id);
-    if(mod.estado==='eliminado'){ if(w) w._deleted=true; }
+    if(mod.estado==='eliminado'){ if(w){w._deleted=true;w._baja=false;} }
+    else if(mod.estado==='baja'){ if(w){w._deleted=true;w._baja=true;} }
     else if(mod.estado==='añadido'){
       if(!w){ const p=STAFF.find(x=>x.db_id===mod.personal_id);
         if(p){
@@ -413,8 +414,10 @@ async function openDay(date){
         const borderClass='td-half'+(isHS?' hour-start':'');
         const inOrig=orig.has(slot);
         if(p._deleted){
+          const letter=p._baja?'B':'C';
+          const letterColor=p._baja?'#888':'#d00';
           if(inOrig) return'<td class="'+borderClass+'" style="background:#f0f0f0">'
-            +'<span class="cell-fill" style="display:flex;align-items:center;justify-content:center;width:100%;height:100%;font-size:8px;font-weight:800;color:#d00">C</span></td>';
+            +'<span class="cell-fill" style="display:flex;align-items:center;justify-content:center;width:100%;height:100%;font-size:8px;font-weight:800;color:'+letterColor+'">'+letter+'</span></td>';
           return'<td class="'+borderClass+'"></td>';
         }
         const curSlots=p._slots||activeSlots(p.hor);
@@ -431,7 +434,8 @@ async function openDay(date){
       return'<tr style="'+(p._deleted?'opacity:0.55':'')+'">'
         +'<td class="td-name" style="border-left:'+(p._deleted?'4px solid #ccc':('3px solid '+BC[c]))+';'
           +'color:'+(p._deleted?'#aaa':'var(--text)')+';'
-          +(p._deleted?'text-decoration:line-through;':'')+'">'+alias(p)+'</td>'
+          +(p._deleted?'text-decoration:line-through;':'')+'">'+alias(p)
+          +(p._baja?' <span style="font-size:9px;color:#888">(baja)</span>':'')+'</td>'
         +cells
         +'<td class="td-total">'+hTot+'</td>'
         +'</tr>';
