@@ -479,7 +479,12 @@ async function openDay(date){
   document.getElementById('cal-view').style.display='none';
   document.getElementById('day-view').style.display='block';
   document.getElementById('day-view').innerHTML=
-    '<div class="back-btn" onclick="closeDayView()">◀ Volver al calendario</div>'
+    '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">'
+    +'<div class="back-btn" style="margin-bottom:0" onclick="closeDayView()">◀ Volver</div>'
+    +'<div style="display:flex;gap:6px">'
+    +'<button onclick="navigateDay(-1)" style="padding:5px 12px;border-radius:var(--radius-sm);border:0.5px solid var(--border2);background:var(--bg3);color:#1a1a1e;font-size:14px;cursor:pointer">‹</button>'
+    +'<button onclick="navigateDay(1)" style="padding:5px 12px;border-radius:var(--radius-sm);border:0.5px solid var(--border2);background:var(--bg3);color:#1a1a1e;font-size:14px;cursor:pointer">›</button>'
+    +'</div></div>'
     +'<div class="day-title">'+label+'</div>'
     +'<div class="day-meta">'+workers.length+' personas · '
       +srtDay.length+' de día · '+srtEve.length+' de tarde</div>'
@@ -511,6 +516,13 @@ async function openDay(date){
     +'<div class="worker-list">'+workerListHTML(srtEve)+'</div>';
 }
 
+function navigateDay(delta){
+  const nd=new Date(selDay);
+  nd.setDate(nd.getDate()+delta);
+  if(nd.getFullYear()===2026&&(nd.getMonth()===6||nd.getMonth()===7)){
+    openDay(nd);
+  }
+}
 function closeDayView(){
   selDay=null;
   document.getElementById('day-view').style.display='none';
