@@ -372,16 +372,20 @@ async function openDay(date){
     }
   });
   // Keep deleted workers visible (shown in grey with red C)
-  const srtDay=workers.filter(p=>!isEvening(p.hor)).sort((a,b)=>{
+  const sortFn=(a,b)=>{
     if(a._deleted&&!b._deleted)return 1;
     if(!a._deleted&&b._deleted)return -1;
     return startHourNorm(a.hor)-startHourNorm(b.hor);
-  });
-  const srtEve=workers.filter(p=>isEvening(p.hor)).sort((a,b)=>{
-    if(a._deleted&&!b._deleted)return 1;
-    if(!a._deleted&&b._deleted)return -1;
-    return startHourNorm(a.hor)-startHourNorm(b.hor);
-  });
+  };
+  const wNautico=workers.filter(p=>(p._zona||'nautico')==='nautico');
+  const wCoc=workers.filter(p=>p._zona==='cocteleria');
+  const wOtro=workers.filter(p=>p._zona==='otro');
+  const srtDay=wNautico.filter(p=>!isEvening(p.hor)).sort(sortFn);
+  const srtEve=wNautico.filter(p=>isEvening(p.hor)).sort(sortFn);
+  const srtCocDay=wCoc.filter(p=>!isEvening(p.hor)).sort(sortFn);
+  const srtCocEve=wCoc.filter(p=>isEvening(p.hor)).sort(sortFn);
+  const srtOtroDay=wOtro.filter(p=>!isEvening(p.hor)).sort(sortFn);
+  const srtOtroEve=wOtro.filter(p=>isEvening(p.hor)).sort(sortFn);
   const label=DAYS_L[date.getDay()]+' '+date.getDate()+' de '+MONTHS_G[date.getMonth()];
 
   // Build thead
@@ -491,7 +495,10 @@ async function openDay(date){
     +'</div></div>'
     +'<div class="day-title">'+label+'</div>'
     +'<div class="day-meta">'+workers.length+' personas · '
-      +srtDay.length+' de día · '+srtEve.length+' de tarde</div>'
+      +srtDay.length+' de día · '+srtEve.length+' de tarde'
+      +(wCoc.length?' · <span style="color:#7020c8">'+wCoc.length+' Coctelería</span>':'')
+      +(wOtro.length?' · <span style="color:#10a8a0">'+wOtro.length+' El Otro</span>':'')
+      +'</div>'
     +'<div class="schedule-box"><div class="schedule-scroll"><table class="sch-table">'
     +'<thead><tr>'
     +'<td class="td-name" style="position:sticky;left:0;z-index:3;background:var(--bg3);border-right:0.5px solid var(--border2);border-bottom:0.5px solid var(--border2)"></td>'
@@ -508,16 +515,16 @@ async function openDay(date){
     +'<td class="td-total" style="background:var(--bg3);border-top:2px solid var(--border2)"></td></tr>'
     +'<tr>'+hourHeadersRow+'</tr>'
     +buildRows(srtEve)
-    +'<tr class="tr-total">'
-    +'<td class="td-name" style="position:sticky;left:0;background:var(--bg3);z-index:1;border-right:0.5px solid var(--border2);border-top:2px solid var(--border2)">Personas/h</td>'
-    +totalCells
-    +'<td class="td-total" style="border-top:2px solid var(--border2)"></td>'
-    +'</tr>'
+    +'<tr class="tr-total"><td class="td-name" style="position:sticky;left:0;background:var(--bg3);z-index:1;border-right:0.5px solid var(--border2);border-top:2px solid var(--border2)">Personas/h El Náutico</td>'+buildTotal([...srtDay,...srtEve])+'<td class="td-total" style="border-top:2px solid var(--border2)"></td></tr>'
+    +(wCoc.length?'<tr><td class="td-name" colspan="1" style="position:sticky;left:0;z-index:2;background:#f3e8ff;border-right:0.5px solid var(--border2);border-top:3px solid #7020c8;font-size:10px;font-weight:700;color:#7020c8;letter-spacing:.05em;text-transform:uppercase;padding:3px 6px">🍸 Coctelería</td><td colspan="'+HALF_SLOTS.length+'" style="background:#f3e8ff;border-top:3px solid #7020c8"></td><td class="td-total" style="background:#f3e8ff;border-top:3px solid #7020c8"></td></tr><tr>'+hourHeadersRow+'</tr>'+buildRows(srtCocDay)+(srtCocEve.length?'<tr><td class="td-name" colspan="1" style="position:sticky;left:0;z-index:2;background:#f3e8ff;border-right:0.5px solid var(--border2);border-top:1px solid #7020c8;font-size:10px;font-weight:600;color:#7020c8;padding:3px 6px">Turno de tarde</td><td colspan="'+HALF_SLOTS.length+'" style="background:#f3e8ff;border-top:1px solid #7020c8"></td><td class="td-total" style="background:#f3e8ff;border-top:1px solid #7020c8"></td></tr><tr>'+hourHeadersRow+'</tr>'+buildRows(srtCocEve):'')+'<tr class="tr-total" style="background:#f3e8ff"><td class="td-name" style="position:sticky;left:0;background:#f3e8ff;z-index:1;border-right:0.5px solid var(--border2);border-top:1px solid #7020c8;color:#7020c8">Personas/h Coctelería</td>'+buildTotal([...srtCocDay,...srtCocEve])+'<td class="td-total" style="border-top:1px solid #7020c8"></td></tr>':'')
+    +(wOtro.length?'<tr><td class="td-name" colspan="1" style="position:sticky;left:0;z-index:2;background:#e8f8f8;border-right:0.5px solid var(--border2);border-top:3px solid #10a8a0;font-size:10px;font-weight:700;color:#10a8a0;letter-spacing:.05em;text-transform:uppercase;padding:3px 6px">🏠 El Otro</td><td colspan="'+HALF_SLOTS.length+'" style="background:#e8f8f8;border-top:3px solid #10a8a0"></td><td class="td-total" style="background:#e8f8f8;border-top:3px solid #10a8a0"></td></tr><tr>'+hourHeadersRow+'</tr>'+buildRows(srtOtroDay)+(srtOtroEve.length?'<tr><td class="td-name" colspan="1" style="position:sticky;left:0;z-index:2;background:#e8f8f8;border-right:0.5px solid var(--border2);border-top:1px solid #10a8a0;font-size:10px;font-weight:600;color:#10a8a0;padding:3px 6px">Turno de tarde</td><td colspan="'+HALF_SLOTS.length+'" style="background:#e8f8f8;border-top:1px solid #10a8a0"></td><td class="td-total" style="background:#e8f8f8;border-top:1px solid #10a8a0"></td></tr><tr>'+hourHeadersRow+'</tr>'+buildRows(srtOtroEve):'')+'<tr class="tr-total" style="background:#e8f8f8"><td class="td-name" style="position:sticky;left:0;background:#e8f8f8;z-index:1;border-right:0.5px solid var(--border2);border-top:1px solid #10a8a0;color:#10a8a0">Personas/h El Otro</td>'+buildTotal([...srtOtroDay,...srtOtroEve])+'<td class="td-total" style="border-top:1px solid #10a8a0"></td></tr>':'')
     +'</tbody></table></div></div>'
-    +'<div style="font-size:12px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">Turno de día</div>'
+    +'<div style="font-size:12px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">El Náutico · Turno de día</div>'
     +'<div class="worker-list">'+workerListHTML(srtDay)+'</div>'
-    +'<div style="font-size:12px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.05em;margin:12px 0 8px">Turno de tarde</div>'
-    +'<div class="worker-list">'+workerListHTML(srtEve)+'</div>';
+    +'<div style="font-size:12px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.05em;margin:12px 0 8px">El Náutico · Turno de tarde</div>'
+    +'<div class="worker-list">'+workerListHTML(srtEve)+'</div>'
+    +(wCoc.length?'<div style="font-size:12px;font-weight:700;color:#7020c8;text-transform:uppercase;letter-spacing:.05em;margin:12px 0 8px">🍸 Coctelería</div><div class="worker-list">'+workerListHTML([...srtCocDay,...srtCocEve])+'</div>':'')
+    +(wOtro.length?'<div style="font-size:12px;font-weight:700;color:#10a8a0;text-transform:uppercase;letter-spacing:.05em;margin:12px 0 8px">🏠 El Otro</div><div class="worker-list">'+workerListHTML([...srtOtroDay,...srtOtroEve])+'</div>':'');
 }
 
 function navigateDay(delta){
