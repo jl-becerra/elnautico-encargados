@@ -211,6 +211,7 @@ function staffToDb(p) {
     puesto: p.puesto,
     categoria: p.categoria || p.puesto,
     zona: p.zona || '',
+    zona_base: p.zona_base||'nautico',
     eficiencia: p.eficiencia || 1,
     honorarios: p.honorarios || 0,
     horas_sem: p.horasDia ? p.horasDia.reduce((a,b)=>a+b,0) : p.hSem,
