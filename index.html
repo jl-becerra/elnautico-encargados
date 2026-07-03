@@ -340,7 +340,7 @@ async function openDay(date){
 
   // Load base workers + modifications from DB
   const mods = await loadDayMods(fmtD(date));
-  let workers=STAFF.filter(p=>isAvail(p,date)).map(p=>({...p}));
+  let workers=STAFF.filter(p=>isAvail(p,date)).map(p=>({...p,_zona:p.zona_base||'nautico',_deleted:false,_baja:false,_vac:false}));
 
   // Store original slots before applying mods
   const origSlotsMap={};
