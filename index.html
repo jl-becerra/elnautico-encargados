@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>El Náutico · Encargados v2.7</title>
+<title>El Náutico · Encargados v2.9</title>
 <style>
 :root{
   --bg:#f5f5f7;--bg2:#fff;--bg3:#e8e8ed;
@@ -193,6 +193,8 @@ function dbToStaff(p) {
     zona: p.zona,
     zona_base: p.zona_base||'nautico',
     alias: p.alias||'',
+    come: !!p.come,
+    duerme: !!p.duerme,
     eficiencia: p.eficiencia,
     honorarios: p.honorarios,
     hSem: p.horas_sem,
@@ -267,6 +269,9 @@ function alias(p){ return p.alias||ALIAS[p.id]||p.nombre.split(' ')[0]+' '+(p.ap
 function isAvail(p,date){
   if(date<parseD(p.inicio)||date>parseD(p.fin))return false;
   return p.dias.includes(dowL(date));
+}
+function isInPeriod(p,date){
+  return date>=parseD(p.inicio)&&date<=parseD(p.fin);
 }
 function slotToTime(s){const h=Math.floor(s/2)%24;const m=(s%2)*30;return String(h).padStart(2,'0')+':'+(m===0?'00':'30');}
 function slotsToHorario(slots){
@@ -451,7 +456,7 @@ async function openDay(date){
       return'<tr style="'+(p._deleted?'opacity:0.55':'')+'">'
         +'<td class="td-name" style="border-left:'+(p._deleted?'4px solid #ccc':('3px solid '+BC[c]))+';'
            +'color:'+(p._deleted?'#aaa':p._added?'#d42020':'var(--text)')+';'
-           +(p._deleted?'text-decoration:line-through;':'')+'">'+alias(p)+zonaLabel
+           +(p._deleted?'text-decoration:line-through;':'')+'">'+alias(p)+(p.come?' 🍔':'')+(p.duerme?' 🛏️':'')+zonaLabel
            +(p._vac?' <span style="font-size:9px;color:#18a050">(vacaciones)</span>':p._baja?' <span style="font-size:9px;color:#888">(baja)</span>':'')+'</td>'
         +cells
         +'<td class="td-total">'+hTot+'</td>'
@@ -503,11 +508,11 @@ async function openDay(date){
     +'<button onclick="navigateDay(1)" style="padding:5px 12px;border-radius:var(--radius-sm);border:0.5px solid var(--border2);background:var(--bg3);color:#1a1a1e;font-size:14px;cursor:pointer">›</button>'
     +'</div></div>'
     +'<div class="day-title" style="position:sticky;top:0;z-index:10;background:var(--bg);padding:4px 0">'+label+'</div>'
-    +'<div class="day-meta">'+workers.length+' personas · '
-      +srtDay.length+' de día · '+srtEve.length+' de tarde'
-      +(wCoc.length?' · <span style="color:#7020c8">'+wCoc.length+' Coctelería</span>':'')
-      +(wOtro.length?' · <span style="color:#10a8a0">'+wOtro.length+' El Otro</span>':'')
-      +'</div>'
+    +(()=>{
+      const nComeDay=[...srtDay,...srtCocDay].filter(p=>p.come).length;
+      const nComeEve=[...srtEve,...srtCocEve].filter(p=>p.come).length;
+      return '<div class="day-meta">'+workers.filter(p=>!p._deleted).length+' personas · '        +srtDay.length+' de día · '+srtEve.length+' de tarde'        +(wCoc.length?' · <span style="color:#7020c8">'+wCoc.length+' Coctelería</span>':'')        +(wOtro.length?' · <span style="color:#10a8a0">'+wOtro.length+' El Otro</span>':'')        +'<br><span style="font-size:11px">🍔 Comen: turno día '+nComeDay+(nComeEve?' · turno tarde '+nComeEve:'')+'</span>'        +'</div>';
+    })()
     +'<div class="schedule-box"><div class="schedule-scroll"><table class="sch-table">'
     +'<thead><tr>'
     +'<td class="td-name" style="position:sticky;left:0;z-index:3;background:var(--bg3);border-right:0.5px solid var(--border2);border-bottom:0.5px solid var(--border2)"></td>'
