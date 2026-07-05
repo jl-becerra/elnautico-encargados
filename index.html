@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>El Náutico · Encargados v3.0</title>
+<title>El Náutico · Encargados v3.2</title>
 <style>
 :root{
   --bg:#f5f5f7;--bg2:#fff;--bg3:#e8e8ed;
@@ -336,6 +336,7 @@ function renderCal(){
     el.className='cal-cell'+(isWE?' we-day':'')+(isSel?' selected':'');
     el.innerHTML='<div class="cn">'+d+'</div><div class="cc">'+cnt+' pers.</div>'
       +'<div class="cbar" style="width:'+Math.min(100,Math.round(cnt/22*100))+'%"></div>';
+    if(isConfirmado(k2)) el.style.outline='2px solid #4a90d9';
     el.onclick=()=>openDay(date);
     g.appendChild(el);
   }
@@ -591,7 +592,7 @@ async function preloadMonthData(month){
 async function init(){
   document.getElementById('cal-grid').innerHTML='<div style="grid-column:1/-1;text-align:center;padding:40px;color:#606070;font-size:14px">Cargando...</div>';
   await loadStaff();
-  await preloadMonthData(curMonth);
+  await Promise.all([preloadMonthData(curMonth), loadConfirmadoHasta()]);
   renderCal();
 }
 init();
