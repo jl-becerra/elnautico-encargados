@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>El Náutico · Encargados v2.0</title>
+<title>El Náutico · Encargados v2.2</title>
 <style>
 :root{
   --bg:#f5f5f7;--bg2:#fff;--bg3:#e8e8ed;
@@ -261,7 +261,7 @@ function fmtD(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0
 function parseD(s){const[y,m,d]=s.split('-').map(Number);return new Date(y,m-1,d)}
 function dowL(d){return d.getDay()===0?6:d.getDay()-1}
 const ALIAS={0: "Marce", 1: "Dani", 2: "Bruno", 3: "Isa", 4: "Loren", 5: "Galindo", 6: "Sheilu", 7: "Yago Toro", 8: "Vasco", 9: "Kike", 10: "Bryan", 11: "Jacobo", 12: "Telle", 13: "Víctor", 14: "Juan", 15: "Matías", 16: "Iago Cuiña", 17: "Gael", 18: "Albita", 19: "Carmen Oria", 20: "Ahmed", 21: "Ángela", 22: "Brais", 23: "Jorge", 24: "Lulú", 25: "Fandiño"};
-function alias(p){ return ALIAS[p.id]||ALIAS[p.color_idx]||(p.nombre.split(' ')[0]+' '+(p.ape?p.ape[0].toUpperCase()+'.':'')); }
+function alias(p){ return p.alias||ALIAS[p.id]||p.nombre.split(' ')[0]+' '+(p.ape?p.ape[0].toUpperCase()+'.':''); }
 
 function isAvail(p,date){
   if(date<parseD(p.inicio)||date>parseD(p.fin))return false;
@@ -314,8 +314,8 @@ function renderCal(){
   for(let i=0;i<dowL(first);i++){const e=document.createElement('div');e.className='cal-cell other';g.appendChild(e);}
   for(let d=1;d<=dim;d++){
     const date=new Date(2026,curMonth,d);
-    const workers=STAFF.filter(p=>isAvail(p,date));
-    const cnt=workers.length;
+    const k2='2026-'+String(curMonth+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+    const cnt=calCounts[k2]!==undefined?calCounts[k2]:STAFF.filter(p=>isAvail(p,date)).length;
     const isWE=date.getDay()===0||date.getDay()===6;
     const isSel=selDay&&fmtD(selDay)===fmtD(date);
     const el=document.createElement('div');
@@ -371,6 +371,7 @@ async function openDay(date){
       } else {
         w.hor=mod.entrada+'-'+mod.salida;
       }
+      w._zona=mod.zona||w._zona||'nautico';
     }
   });
   // Keep deleted workers visible (shown in grey with red C)
@@ -544,9 +545,35 @@ function closeDayView(){
   renderCal();
 }
 
+const calCounts={};
+
+async function preloadMonthData(month){
+  const m=month;
+  const dim=new Date(2026,m+1,0).getDate();
+  const from='2026-'+String(m+1).padStart(2,'0')+'-01';
+  const to='2026-'+String(m+1).padStart(2,'0')+'-'+String(dim).padStart(2,'0');
+  try{
+    const rows=await supa.get('horarios_dia','fecha=gte.'+from+'&fecha=lte.'+to);
+    const byDate={};
+    rows.forEach(r=>{if(!byDate[r.fecha])byDate[r.fecha]=[];byDate[r.fecha].push(r);});
+    for(let d=1;d<=dim;d++){
+      const date=new Date(2026,m,d);
+      const k='2026-'+String(m+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+      const mods=byDate[k]||[];
+      let cnt=STAFF.filter(p=>isAvail(p,date)).length;
+      mods.forEach(mod=>{
+        if(mod.estado==='eliminado'||mod.estado==='baja'||mod.estado==='vacaciones') cnt--;
+        else if(mod.estado==='añadido') cnt++;
+      });
+      calCounts[k]=Math.max(0,cnt);
+    }
+  }catch(e){console.error('preloadMonthData:',e);}
+}
+
 async function init(){
   document.getElementById('cal-grid').innerHTML='<div style="grid-column:1/-1;text-align:center;padding:40px;color:#606070;font-size:14px">Cargando...</div>';
   await loadStaff();
+  await preloadMonthData(curMonth);
   renderCal();
 }
 init();
