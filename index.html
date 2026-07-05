@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>El Náutico · Encargados v2.6</title>
+<title>El Náutico · Encargados v2.7</title>
 <style>
 :root{
   --bg:#f5f5f7;--bg2:#fff;--bg3:#e8e8ed;
@@ -452,7 +452,6 @@ async function openDay(date){
         +'<td class="td-name" style="border-left:'+(p._deleted?'4px solid #ccc':('3px solid '+BC[c]))+';'
            +'color:'+(p._deleted?'#aaa':p._added?'#d42020':'var(--text)')+';'
            +(p._deleted?'text-decoration:line-through;':'')+'">'+alias(p)+zonaLabel
-           +(p._added?' <span style="font-size:9px;color:#d42020">(añadido)</span>':'')
            +(p._vac?' <span style="font-size:9px;color:#18a050">(vacaciones)</span>':p._baja?' <span style="font-size:9px;color:#888">(baja)</span>':'')+'</td>'
         +cells
         +'<td class="td-total">'+hTot+'</td>'
