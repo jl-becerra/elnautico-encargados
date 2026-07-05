@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>El Náutico · Encargados v2.9</title>
+<title>El Náutico · Encargados v3.0</title>
 <style>
 :root{
   --bg:#f5f5f7;--bg2:#fff;--bg3:#e8e8ed;
@@ -266,6 +266,14 @@ function dowL(d){return d.getDay()===0?6:d.getDay()-1}
 const ALIAS={0: "Marce", 1: "Dani", 2: "Bruno", 3: "Isa", 4: "Loren", 5: "Galindo", 6: "Sheilu", 7: "Yago Toro", 8: "Vasco", 9: "Kike", 10: "Bryan", 11: "Jacobo", 12: "Telle", 13: "Víctor", 14: "Juan", 15: "Matías", 16: "Iago Cuiña", 17: "Gael", 18: "Albita", 19: "Carmen Oria", 20: "Ahmed", 21: "Ángela", 22: "Brais", 23: "Jorge", 24: "Lulú", 25: "Fandiño"};
 function alias(p){ return p.alias||ALIAS[p.id]||p.nombre.split(' ')[0]+' '+(p.ape?p.ape[0].toUpperCase()+'.':''); }
 
+let _confirmadoHasta=null;
+async function loadConfirmadoHasta(){
+  try{
+    const rows=await supa.get('config','key=eq.confirmado_hasta');
+    _confirmadoHasta=rows[0]?.value||null;
+  }catch(e){_confirmadoHasta=null;}
+}
+function isConfirmado(dateStr){ return _confirmadoHasta&&dateStr<=_confirmadoHasta; }
 function isAvail(p,date){
   if(date<parseD(p.inicio)||date>parseD(p.fin))return false;
   return p.dias.includes(dowL(date));
@@ -507,7 +515,7 @@ async function openDay(date){
     +'<button onclick="navigateDay(-1)" style="padding:5px 12px;border-radius:var(--radius-sm);border:0.5px solid var(--border2);background:var(--bg3);color:#1a1a1e;font-size:14px;cursor:pointer">‹</button>'
     +'<button onclick="navigateDay(1)" style="padding:5px 12px;border-radius:var(--radius-sm);border:0.5px solid var(--border2);background:var(--bg3);color:#1a1a1e;font-size:14px;cursor:pointer">›</button>'
     +'</div></div>'
-    +'<div class="day-title" style="position:sticky;top:0;z-index:10;background:var(--bg);padding:4px 0">'+label+'</div>'
+    +'<div class="day-title" style="position:sticky;top:0;z-index:10;background:var(--bg);padding:4px 0">'+label+(isConfirmado(fmtD(date))?' <span style="font-size:13px;font-weight:400;color:#4a90d9">✓ comprobado</span>':'')+'</div>'
     +(()=>{
       const nComeDay=[...srtDay,...srtCocDay].filter(p=>p.come).length;
       const nComeEve=[...srtEve,...srtCocEve].filter(p=>p.come).length;
