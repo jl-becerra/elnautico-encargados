@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>El Náutico · Encargados v3.2</title>
+<title>El Náutico · Encargados v3.3</title>
 <style>
 :root{
   --bg:#f5f5f7;--bg2:#fff;--bg3:#e8e8ed;
@@ -195,6 +195,7 @@ function dbToStaff(p) {
     alias: p.alias||'',
     come: !!p.come,
     duerme: !!p.duerme,
+    activo: p.activo!==false,
     eficiencia: p.eficiencia,
     honorarios: p.honorarios,
     hSem: p.horas_sem,
@@ -235,7 +236,7 @@ let dbLoaded = false;
 async function loadStaff() {
   try {
     const rows = await supa.get('personal', 'order=color_idx.asc');
-    STAFF = rows.map(dbToStaff);
+    STAFF = rows.map(dbToStaff).filter(p=>p.activo!==false);
     dbLoaded = true;
   } catch(e) {
     console.error('Error cargando personal:', e);
@@ -465,7 +466,7 @@ async function openDay(date){
       return'<tr style="'+(p._deleted?'opacity:0.55':'')+'">'
         +'<td class="td-name" style="border-left:'+(p._deleted?'4px solid #ccc':('3px solid '+BC[c]))+';'
            +'color:'+(p._deleted?'#aaa':p._added?'#d42020':'var(--text)')+';'
-           +(p._deleted?'text-decoration:line-through;':'')+'">'+alias(p)+(p.come?' 🍔':'')+(p.duerme?' 🛏️':'')+zonaLabel
+           +(p._deleted?'text-decoration:line-through;':'')+'">'+alias(p)+(p.come&&!p._vac?' 🍔':'')+(p.duerme?' 🛏️':'')+zonaLabel
            +(p._vac?' <span style="font-size:9px;color:#18a050">(vacaciones)</span>':p._baja?' <span style="font-size:9px;color:#888">(baja)</span>':'')+'</td>'
         +cells
         +'<td class="td-total">'+hTot+'</td>'
