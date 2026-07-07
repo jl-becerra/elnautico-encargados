@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>El Náutico · Encargados v3.3</title>
+<title>El Náutico · Encargados v3.4</title>
 <style>
 :root{
   --bg:#f5f5f7;--bg2:#fff;--bg3:#e8e8ed;
@@ -400,12 +400,12 @@ async function openDay(date){
   const wCoc=workers.filter(p=>p._zona==='cocteleria');
   const wOtro=workers.filter(p=>p._zona==='otro');
   const sortNom=(a,b)=>(a.nombre||'').localeCompare(b.nombre||'','es');
-  const srtDay=wNautico.filter(p=>!isEvening(p.hor)).sort(sortNom);
-  const srtEve=wNautico.filter(p=>isEvening(p.hor)).sort(sortNom);
-  const srtCocDay=wCoc.filter(p=>!isEvening(p.hor)).sort(sortNom);
-  const srtCocEve=wCoc.filter(p=>isEvening(p.hor)).sort(sortNom);
-  const srtOtroDay=wOtro.filter(p=>!isEvening(p.hor)).sort(sortNom);
-  const srtOtroEve=wOtro.filter(p=>isEvening(p.hor)).sort(sortNom);
+  const srtDay=wNautico.filter(p=>!isEvening(p.hor)).sort(sortFn);
+  const srtEve=wNautico.filter(p=>isEvening(p.hor)).sort(sortFn);
+  const srtCocDay=wCoc.filter(p=>!isEvening(p.hor)).sort(sortFn);
+  const srtCocEve=wCoc.filter(p=>isEvening(p.hor)).sort(sortFn);
+  const srtOtroDay=wOtro.filter(p=>!isEvening(p.hor)).sort(sortFn);
+  const srtOtroEve=wOtro.filter(p=>isEvening(p.hor)).sort(sortFn);
   const label=DAYS_L[date.getDay()]+' '+date.getDate()+' de '+MONTHS_G[date.getMonth()];
 
   // Build thead
