@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>El Náutico · Encargados v3.5</title>
+<title>El Náutico · Encargados v3.6</title>
 <style>
 :root{
   --bg:#f5f5f7;--bg2:#fff;--bg3:#e8e8ed;
@@ -491,11 +491,7 @@ async function openDay(date){
 
   // Worker list
   function workerListHTML(list){
-    const sorted=[...list].sort((a,b)=>{
-      const aOut=a._deleted,bOut=b._deleted;
-      if(aOut&&!bOut)return 1;if(!aOut&&bOut)return -1;
-      return(a.nombre||'').localeCompare(b.nombre||'','es');
-    });
+    const sorted=[...list].sort((a,b)=>(a.nombre||'').localeCompare(b.nombre||'','es'));
     return sorted.map(p=>{
       const shifts=parseShifts(p.hor);
       const timeStr=shifts.map(s=>s.entrada+'–'+s.salida).join(' / ');
