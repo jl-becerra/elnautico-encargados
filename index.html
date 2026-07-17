@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>El Náutico · Encargados v4.2</title>
+<title>El Náutico · Encargados v4.3</title>
 <style>
 :root{
   --bg:#f5f5f7;--bg2:#fff;--bg3:#e8e8ed;
@@ -615,11 +615,12 @@ async function forceRefresh(){
   confirmadoHasta=null;
   await loadConfirmadoHasta();
   if(selDay){
-    document.getElementById('cal-view').style.display='block';
-    document.getElementById('day-view').style.display='none';
+    const d=selDay;
     selDay=null;
+    await openDay(d);
+  } else {
+    renderCal();
   }
-  renderCal();
   if(btn){btn.innerHTML='&#x1F504;';btn.style.pointerEvents='';}
 }
 
