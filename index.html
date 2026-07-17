@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>El Náutico · Encargados v3.6</title>
+<title>El Náutico · Encargados v3.9</title>
 <style>
 :root{
   --bg:#f5f5f7;--bg2:#fff;--bg3:#e8e8ed;
@@ -195,6 +195,7 @@ function dbToStaff(p) {
     alias: p.alias||'',
     come: !!p.come,
     duerme: !!p.duerme,
+    horarios_dow: p.horarios_dow||null,
     activo: p.activo!==false,
     eficiencia: p.eficiencia,
     honorarios: p.honorarios,
@@ -275,6 +276,11 @@ async function loadConfirmadoHasta(){
   }catch(e){_confirmadoHasta=null;}
 }
 function isConfirmado(dateStr){ return _confirmadoHasta&&dateStr<=_confirmadoHasta; }
+function getHorForDay(p,date){
+  if(p.horarios_dow){const dow=String(date.getDay());if(p.horarios_dow[dow])return p.horarios_dow[dow];}
+  return p.hor||'';
+}
+
 function isAvail(p,date){
   if(date<parseD(p.inicio)||date>parseD(p.fin))return false;
   return p.dias.includes(dowL(date));
@@ -459,7 +465,8 @@ async function openDay(date){
            return'<td class="'+borderClass+'" style="position:relative"><span style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:800;color:#d00">C</span></td>';
          return'<td class="'+borderClass+'"></td>';
       }).join('');
-      const hTot=p._deleted?'—':parseShifts(p.hor).reduce((a,s)=>a+calcH(s.entrada,s.salida),0)+'h';
+      const effHor=getHorForDay(p,selDay||new Date());
+    const hTot=p._deleted?'—':parseShifts(effHor).reduce((a,s)=>a+calcH(s.entrada,s.salida),0)+'h';
       const zonaLabel=(!p._deleted&&p._zona&&p._zona!=='nautico')
          ?' <span style="font-size:9px;padding:1px 4px;border-radius:6px;background:'+(p._zona==='cocteleria'?'#7020c8':'#10a8a0')+';color:#fff">'+(p._zona==='cocteleria'?'K':'O')+'</span>'
         :'';
@@ -524,7 +531,7 @@ async function openDay(date){
     +(()=>{
       const nComeDay=[...srtDay,...srtCocDay].filter(p=>p.come).length;
       const nComeEve=[...srtEve,...srtCocEve].filter(p=>p.come).length;
-      return '<div class="day-meta">'+workers.filter(p=>!p._deleted).length+' personas · '        +srtDay.length+' de día · '+srtEve.length+' de tarde'        +(wCoc.length?' · <span style="color:#7020c8">'+wCoc.length+' Coctelería</span>':'')        +(wOtro.length?' · <span style="color:#10a8a0">'+wOtro.length+' El Otro</span>':'')        +'<br><span style="font-size:11px">🍔 Comen: turno día '+nComeDay+(nComeEve?' · turno tarde '+nComeEve:'')+'</span>'        +'</div>';
+      return '<div class="day-meta">'+workers.filter(p=>!p._deleted).length+' personas · '        +srtDay.filter(p=>!p._deleted).length+' de día · '+srtEve.filter(p=>!p._deleted).length+' de tarde'        +(wCoc.filter(p=>!p._deleted).length?' · <span style="color:#7020c8">'+wCoc.filter(p=>!p._deleted).length+' Coctelería</span>':'')        +(wOtro.filter(p=>!p._deleted).length?' · <span style="color:#10a8a0">'+wOtro.filter(p=>!p._deleted).length+' El Otro</span>':'')        +'<br><span style="font-size:11px">🍔 Comen: turno día '+nComeDay+(nComeEve?' · turno tarde '+nComeEve:'')+'</span>'        +'</div>';
     })()
     +'<div class="schedule-box"><div class="schedule-scroll"><table class="sch-table">'
     +'<thead><tr>'
