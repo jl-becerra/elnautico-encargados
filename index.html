@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>El Náutico · Encargados v4.1</title>
+<title>El Náutico · Encargados v4.2</title>
 <style>
 :root{
   --bg:#f5f5f7;--bg2:#fff;--bg3:#e8e8ed;
@@ -605,6 +605,22 @@ async function preloadMonthData(month){
       calCounts[k]=Math.max(0,cnt);
     }
   }catch(e){console.error('preloadMonthData:',e);}
+}
+
+async function forceRefresh(){
+  const btn=document.getElementById('refresh-btn');
+  if(btn){btn.textContent='⏳';btn.style.pointerEvents='none';}
+  STAFF=[];
+  await loadStaff();
+  confirmadoHasta=null;
+  await loadConfirmadoHasta();
+  if(selDay){
+    document.getElementById('cal-view').style.display='block';
+    document.getElementById('day-view').style.display='none';
+    selDay=null;
+  }
+  renderCal();
+  if(btn){btn.innerHTML='&#x1F504;';btn.style.pointerEvents='';}
 }
 
 async function init(){
